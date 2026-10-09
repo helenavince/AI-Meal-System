@@ -1,0 +1,120 @@
+
+* {
+  box-sizing: border-box;
+}
+
+.dashboard {
+  min-height: 100vh;
+  padding: 35px;
+  background: #f4f7fc;
+  font-family: Arial, sans-serif;
+  color: #172033;
+}
+
+.dashboard h1 {
+  margin: 0 0 8px;
+  font-size: 34px;
+  color: #172554;
+}
+
+.dashboard > p {
+  margin: 0 0 30px;
+  color: #64748b;
+  font-size: 16px;
+}
+
+.meal-container {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.meal-card {
+  background: #ffffff;
+  padding: 25px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.meal-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.09);
+}
+
+.meal-card h2 {
+  margin: 0 0 14px;
+  font-size: 22px;
+}
+
+.meal-card p {
+  margin: 0 0 24px;
+  color: #64748b;
+  font-size: 15px;
+}
+
+.meal-card button {
+  padding: 12px 22px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.meal-card button:hover {
+  background: #1d4ed8;
+}
+
+@media (max-width: 650px) {
+  .dashboard {
+    padding: 20px;
+  }
+
+  .meal-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+.booking-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 25px;
+}
+
+.booking-header h1 {
+  margin-bottom: 8px;
+}
+
+.booking-header p {
+  margin: 0;
+  color: #64748b;
+}
+
+.booking-navigation {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.booking-navigation button {
+  padding: 11px 16px;
+  background: #ffffff;
+  color: #2563eb;
+  border: 1px solid #2563eb;
+  border-radius: 9px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.booking-navigation button:hover {
+  background: #eff6ff;
+}
+

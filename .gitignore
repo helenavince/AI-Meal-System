@@ -1,0 +1,59 @@
+# Python
+
+**pycache**/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Environment variables and secrets
+
+.env
+.env.*
+!.env.example
+
+# Node.js
+
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# IDE and operating system
+
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+
+*.log
+
+
+# Python virtual environments and cache
+
+venv/
+.venv/
+backend/venv/
+**pycache**/
+*.py[cod]
+
+# Secrets
+
+.env
+.env.*
+!.env.example
+
+# Frontend dependencies and build
+
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# IDE and logs
+
+.vscode/
+.idea/
+*.log
