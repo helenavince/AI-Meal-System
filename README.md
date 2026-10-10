@@ -88,7 +88,7 @@ graph TD
 - **Student Profile**: Shows hostel room, department (ECE), dietary preferences, and personal food saved impact badge.
 
 ### Administrator & Kitchen Portal
-- **Role-Protected Access**: Staff portal protected by passcode authorization (Default PIN: `1234` or `admin123`).
+- **Role-Protected Access**: Staff portal protected by password authorization (Administrator Password: `hellomini`).
 - **Overview & Daily Quotas**: Live booking counts, predicted demand, and recommended preparation quantities.
 - **Portion & Food Tracking**: Input prepared and served portions with automatic calculation of leftovers and waste percentages.
 - **Dish-Wise Waste Recording**: Track individual leftovers for dishes (Steamed Rice, Sambar, Vegetable Poriyal, Curd, etc.).
@@ -277,7 +277,7 @@ npm run build
 
 ### Part 2: Administrator & Food Waste Workflow
 1. Click **Admin Login** in the top right header.
-2. Enter passcode **`1234`** (or `admin123`) to authorize staff access.
+2. Enter password **`hellomini`** to authorize staff access.
 3. In **Overview & Bookings**, observe the total confirmed bookings, AI predicted attendance, and recommended prep portions.
 4. Click **Record Food & Waste** to simulate logging today's lunch:
    - Enter prepared portions (e.g. 410) and served portions (e.g. 385).

@@ -409,13 +409,13 @@ function App() {
   }
 
   const submitAdminPin = () => {
-    // Default PIN: 1234 or admin123
-    if (adminPinInput === '1234' || adminPinInput === 'admin123' || adminPinInput === 'admin') {
+    // Administrator password: hellomini
+    if (adminPinInput === 'hellomini') {
       setCurrentRole('admin')
       setAdminPinModal(false)
       showToast('✓ Welcome to Mess Administrator Dashboard')
     } else {
-      setAdminPinError('Invalid Admin Passcode. Hint: Use 1234')
+      setAdminPinError('Invalid Admin Password. Hint: Use hellomini')
     }
   }
 
@@ -1402,7 +1402,7 @@ function App() {
           <Sparkles className="welcome-icon" size={32} />
           <h2>
             {currentRole === 'student'
-              ? `Good day, ${studentProfile.name}!`
+              ? `Hello, ${studentProfile.name}!`
               : 'Mess Administrator Control Panel'}
           </h2>
         </div>
@@ -1546,10 +1546,10 @@ function App() {
             <p className="modal-question">Enter staff credentials to open the waste reduction portal.</p>
 
             <div className="admin-pin-group">
-              <label>Administrator Passcode:</label>
+              <label>Administrator Password:</label>
               <input
                 type="password"
-                placeholder="Enter PIN (Default: 1234)"
+                placeholder="Enter password (hellomini)"
                 value={adminPinInput}
                 onChange={(e) => setAdminPinInput(e.target.value)}
                 autoFocus
@@ -1558,7 +1558,7 @@ function App() {
                 }}
               />
               {adminPinError && <span className="pin-error-text">{adminPinError}</span>}
-              <small className="pin-hint">Demo evaluation hint: <strong>1234</strong> or <strong>admin123</strong></small>
+              <small className="pin-hint">Administrator password: <strong>hellomini</strong></small>
             </div>
 
             <div className="modal-buttons">
