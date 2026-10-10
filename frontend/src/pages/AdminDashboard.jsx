@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "./AdminDashboard.css";
+import API_BASE_URL from "../api";
 function AdminDashboard() {
 
   const [totalBookings, setTotalBookings] = useState(0);
@@ -30,9 +31,13 @@ function AdminDashboard() {
   // LOAD DASHBOARD DATA
   // =====================================================
 
+  // =====================================================
+  // LOAD DASHBOARD DATA
+  // =====================================================
+
   const loadDashboard = () => {
 
-    fetch("http://127.0.0.1:8000/admin/booking-count")
+    fetch(`${API_BASE_URL}/admin/booking-count`)
       .then(response => response.json())
       .then(data => {
         setTotalBookings(data.total_bookings);
@@ -41,8 +46,7 @@ function AdminDashboard() {
         console.error("Booking count error:", error);
       });
 
-
-    fetch("http://127.0.0.1:8000/admin/meal-counts")
+    fetch(`${API_BASE_URL}/admin/meal-counts`)
       .then(response => response.json())
       .then(data => {
         setMealCounts(data);
@@ -51,8 +55,7 @@ function AdminDashboard() {
         console.error("Meal count error:", error);
       });
 
-
-    fetch("http://127.0.0.1:8000/meals")
+    fetch(`${API_BASE_URL}/meals`)
       .then(response => response.json())
       .then(data => {
         setMeals(data);
@@ -61,12 +64,8 @@ function AdminDashboard() {
         console.error("Meals error:", error);
       });
 
-
-    // =================================================
     // TODAY'S MEALS
-    // =================================================
-
-    fetch("http://127.0.0.1:8000/admin/today-meals")
+    fetch(`${API_BASE_URL}/admin/today-meals`)
       .then(response => response.json())
       .then(data => {
         setTodayMeals(data);
@@ -75,8 +74,7 @@ function AdminDashboard() {
         console.error("Today's meals error:", error);
       });
 
-
-    fetch("http://127.0.0.1:8000/admin/food-waste-summary")
+    fetch(`${API_BASE_URL}/admin/food-waste-summary`)
       .then(response => response.json())
       .then(data => {
         setWasteSummary(data);
@@ -85,8 +83,7 @@ function AdminDashboard() {
         console.error("Waste summary error:", error);
       });
 
-
-    fetch("http://127.0.0.1:8000/admin/meal-prediction")
+    fetch(`${API_BASE_URL}/admin/meal-prediction`)
       .then(response => response.json())
       .then(data => {
         setPredictions(data);
@@ -98,86 +95,59 @@ function AdminDashboard() {
   };
 
 
+    // =================================================
+    // TODAY'S MEALS
+    // =================================================
+
+
+
   useEffect(() => {
 
     loadDashboard();
 
   }, []);
 
+useEffect(() => {
+    loadDashboard();
+  }, []);
+ 
 
-  // =====================================================
-  // ADD MEAL
-  // =====================================================
+const addMeal = () => {
+  if (!mealName || !mealDate || !mealTime) {
+    alert("Please fill all meal details");
+    return;
+  }
 
-  const addMeal = () => {
-
-    if (!mealName || !mealDate || !mealTime) {
-
-      alert("Please fill all meal details");
-
-      return;
-
-    }
-
-
-    fetch("http://127.0.0.1:8000/admin/meals", {
-
-      method: "POST",
-
-      headers: {
-        "Content-Type": "application/json"
-      },
-
-      body: JSON.stringify({
-
-        meal_name: mealName,
-
-        meal_type: mealType,
-
-        meal_date: mealDate,
-
-        meal_time: mealTime
-
-      })
-
+  fetch(`${API_BASE_URL}/admin/meals`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      meal_name: mealName,
+      meal_type: mealType,
+      meal_date: mealDate,
+      meal_time: mealTime
     })
-
-      .then(response => response.json())
-
-      .then(data => {
-
-        if (data.success) {
-
-          alert("Meal added successfully!");
-
-          setMealName("");
-
-          setMealType("Breakfast");
-
-          setMealDate("");
-
-          setMealTime("");
-
-          loadDashboard();
-
-        } else {
-
-          alert("Failed to add meal");
-
-        }
-
-      })
-
-      .catch(error => {
-
-        console.error("Add meal error:", error);
-
-        alert("Unable to connect to server");
-
-      });
-
-  };
-
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert("Meal added successfully!");
+        setMealName("");
+        setMealType("Breakfast");
+        setMealDate("");
+        setMealTime("");
+        loadDashboard();
+      } else {
+        alert("Failed to add meal");
+      }
+    })
+    .catch(error => {
+      console.error("Add meal error:", error);
+      alert("Unable to connect to server");
+    });
+};
 
   // =====================================================
   // RECORD FOOD WASTE
@@ -233,78 +203,40 @@ function AdminDashboard() {
 
     }
 
+    
+fetch(`${API_BASE_URL}/admin/food-waste`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    meal_id: Number(wasteMealId),
+    prepared_quantity: Number(preparedQuantity),
+    consumed_quantity: Number(consumedQuantity)
+  })
+})
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert(
+        "Food waste recorded successfully!\n\nWaste Quantity: "
+        + data.waste_quantity
+      );
 
-    fetch(
-      "http://127.0.0.1:8000/admin/food-waste",
-      {
+      setWasteMealId("");
+      setPreparedQuantity("");
+      setConsumedQuantity("");
 
-        method: "POST",
-
-        headers: {
-          "Content-Type": "application/json"
-        },
-
-        body: JSON.stringify({
-
-          meal_id: Number(wasteMealId),
-
-          prepared_quantity:
-            Number(preparedQuantity),
-
-          consumed_quantity:
-            Number(consumedQuantity)
-
-        })
-
-      }
-    )
-
-      .then(response => response.json())
-
-      .then(data => {
-
-        if (data.success) {
-
-          alert(
-            "Food waste recorded successfully!\n\nWaste Quantity: "
-            + data.waste_quantity
-          );
-
-          setWasteMealId("");
-
-          setPreparedQuantity("");
-
-          setConsumedQuantity("");
-
-          loadDashboard();
-
-        } else {
-
-          alert(
-            data.message ||
-            "Failed to record food waste"
-          );
-
-        }
-
-      })
-
-      .catch(error => {
-
-        console.error(
-          "Food waste error:",
-          error
-        );
-
-        alert(
-          "Unable to connect to server"
-        );
-
-      });
-
+      loadDashboard();
+    } else {
+      alert(data.message || "Failed to record food waste");
+    }
+  })
+  .catch(error => {
+    console.error("Food waste error:", error);
+    alert("Unable to connect to server");
+  });
   };
-
-
   // =====================================================
   // COMPLETE MEAL
   // =====================================================
@@ -321,53 +253,28 @@ function AdminDashboard() {
     }
 
 
-    fetch(
-      `http://127.0.0.1:8000/admin/meals/${mealId}/complete`,
-      {
-        method: "PUT"
-      }
-    )
+fetch(`${API_BASE_URL}/admin/meals/${mealId}/complete`, {
+  method: "PUT"
+})
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert(
+        "Meal completed successfully!\n\n" +
+        "Completed bookings: " +
+        data.completed_bookings
+      );
 
-      .then(response => response.json())
-
-      .then(data => {
-
-        if (data.success) {
-
-          alert(
-            "Meal completed successfully!\n\n" +
-            "Completed bookings: " +
-            data.completed_bookings
-          );
-
-          loadDashboard();
-
-        } else {
-
-          alert(
-            data.message ||
-            "Failed to complete meal"
-          );
-
-        }
-
-      })
-
-      .catch(error => {
-
-        console.error(
-          "Complete meal error:",
-          error
-        );
-
-        alert(
-          "Unable to connect to server"
-        );
-
-      });
-
+      loadDashboard();
+    } else {
+      alert(data.message || "Failed to complete meal");
+    }
+  })
+  .catch(error => {
+    console.error("Complete meal error:", error);
+    alert("Unable to connect to server");
+  });
   };
-
 
   // =====================================================
   // MEAL ICON

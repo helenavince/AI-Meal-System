@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from database import connection
+from backend.database import connection
 from pydantic import BaseModel
 
 import os
@@ -34,12 +34,20 @@ print("ML model loaded successfully!")
 # CORS CONFIGURATION
 # =========================================================
 
+
+# CORS CONFIGURATION
+frontend_origins = [
+    origin.strip()
+    for origin in os.getenv(
+        "FRONTEND_URLS",
+        "http://localhost:5173,http://localhost:5174"
+    ).split(",")
+    if origin.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:5174"
-    ],
+    allow_origins=frontend_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
@@ -61,8 +69,8 @@ def home():
 # =========================================================
 # GET ALL CURRENT / UPCOMING MEALS
 # =========================================================
-
 @app.get("/meals")
+
 def get_meals():
 
     cursor = connection.cursor()

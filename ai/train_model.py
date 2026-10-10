@@ -143,6 +143,8 @@ df = df.dropna(
     subset=["meal_type_encoded"]
 )
 
+print("\nHistorical meals by meal type:")
+print(df.groupby("meal_type")["meal_id"].nunique())
 
 # =========================================================
 # TRAINING FEATURES
