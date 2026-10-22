@@ -23,7 +23,12 @@ import {
   Info,
   Layers,
   Leaf,
-  X
+  X,
+  Search,
+  FileText,
+  Calendar,
+  Filter,
+  Check
 } from 'lucide-react'
 import {
   BarChart,
@@ -55,6 +60,7 @@ import {
   recordDishWasteApi,
   fetchWasteAnalytics
 } from './api'
+import { getMenuForDate, getAllMonthlyMenus, MONTHLY_MESS_MENU } from './data/messMenu'
 
 function MealImage({ type }) {
   if (type === 'Breakfast') {
@@ -162,27 +168,25 @@ function App() {
     return `${year}-${month}-${day}`
   })
 
-  // Master Menus
-  const [meals, setMeals] = useState([
-    {
-      type: 'Breakfast',
-      time: '7:00 AM - 8:45 AM',
-      menu: 'Idli, Sambar & Chutney',
-      dishes: ['Idli', 'Sambar', 'Coconut Chutney', 'Medu Vada']
-    },
-    {
-      type: 'Lunch',
-      time: '12:15 PM - 1:30 PM',
-      menu: 'Rice, Sambar, Poriyal & Curd',
-      dishes: ['Steamed Rice', 'Sambar', 'Vegetable Poriyal', 'Curd', 'Rasam']
-    },
-    {
-      type: 'Dinner',
-      time: '7:00 PM - 8:45 PM',
-      menu: 'Chapati & Vegetable Curry',
-      dishes: ['Wheat Chapati', 'Mixed Vegetable Curry', 'Dal Tadka', 'Jeera Rice']
-    }
-  ])
+  // Master Menus - dynamically loaded from calendar mess schedule
+  const [meals, setMeals] = useState(() => {
+    const today = new Date()
+    const year = today.getFullYear()
+    const month = String(today.getMonth() + 1).padStart(2, '0')
+    const day = String(today.getDate()).padStart(2, '0')
+    const initial = getMenuForDate(`${year}-${month}-${day}`)
+    return initial.map(m => ({
+      type: m.meal_type,
+      time: m.timing_label,
+      menu: m.main_items,
+      dishes: m.dishes || []
+    }))
+  })
+
+  // Monthly Schedule Modal & Search States
+  const [showMonthlyScheduleModal, setShowMonthlyScheduleModal] = useState(false)
+  const [monthlySearchFilter, setMonthlySearchFilter] = useState('')
+  const [monthlyWeekFilter, setMonthlyWeekFilter] = useState('all')
 
   // AI & Safety Buffer Explorer State
   const [aiMealType, setAiMealType] = useState('Lunch')
@@ -199,17 +203,23 @@ function App() {
     return today.toISOString().split('T')[0]
   })
 
-  // Dish Waste Logging Form State
+  // Dish Waste Logging Form State (dynamically mapped to calendar day meals)
   const [prepMealType, setPrepMealType] = useState('Lunch')
   const [prepActualPrepared, setPrepActualPrepared] = useState(410)
   const [prepActualServed, setPrepActualServed] = useState(380)
   const [prepNotes, setPrepNotes] = useState('Standard lunch session')
-  const [dishWasteInputs, setDishWasteInputs] = useState([
-    { dish_name: 'Steamed Rice', prepared_portions: 220, served_portions: 195, reason: 'Standard surplus' },
-    { dish_name: 'Sambar', prepared_portions: 160, served_portions: 145, reason: 'Standard surplus' },
-    { dish_name: 'Vegetable Poriyal', prepared_portions: 140, served_portions: 125, reason: 'Over-preparation' },
-    { dish_name: 'Curd', prepared_portions: 110, served_portions: 105, reason: 'Standard surplus' }
-  ])
+  const [dishWasteInputs, setDishWasteInputs] = useState(() => {
+    const today = new Date().toISOString().split('T')[0]
+    const dayMenu = getMenuForDate(today)
+    const currentMeal = dayMenu.find(m => m.meal_type === 'Lunch')
+    return (currentMeal?.dishes || ['Steamed Rice', 'Sambar', 'Curd']).map((dish, i) => ({
+      dish_name: dish,
+      prepared_portions: [220, 160, 130, 110, 90][i % 5],
+      served_portions: [195, 145, 120, 105, 80][i % 5],
+      reason: 'Standard surplus'
+    }))
+  })
+
 
   // Show Toast
   const showToast = (message, type = 'success') => {
@@ -222,8 +232,8 @@ function App() {
   // Load Initial Data on Boot
   useEffect(() => {
     async function loadInitialData() {
-      // Menus
-      const remoteMenus = await fetchMenus()
+      // Menus for selectedDate
+      const remoteMenus = await fetchMenus(selectedDate)
       if (remoteMenus && remoteMenus.length > 0) {
         setMeals(remoteMenus.map(m => ({
           type: m.meal_type,
@@ -258,6 +268,36 @@ function App() {
 
     loadInitialData()
   }, [])
+
+  // Sync menu whenever selectedDate changes
+  useEffect(() => {
+    async function updateMenuForDate() {
+      const remoteMenus = await fetchMenus(selectedDate)
+      if (remoteMenus && remoteMenus.length > 0) {
+        setMeals(remoteMenus.map(m => ({
+          type: m.meal_type,
+          time: m.timing_label,
+          menu: m.main_items,
+          dishes: m.dishes || []
+        })))
+      }
+    }
+    updateMenuForDate()
+  }, [selectedDate])
+
+  // Sync admin dish waste logging with current calendar day schedule
+  useEffect(() => {
+    const dayMenu = getMenuForDate(adminDate)
+    const currentMeal = dayMenu.find(m => m.meal_type === prepMealType)
+    if (currentMeal && currentMeal.dishes && currentMeal.dishes.length > 0) {
+      setDishWasteInputs(currentMeal.dishes.map((dish, i) => ({
+        dish_name: dish,
+        prepared_portions: [220, 160, 130, 110, 90][i % 5],
+        served_portions: [195, 145, 120, 105, 80][i % 5],
+        reason: 'Standard surplus'
+      })))
+    }
+  }, [adminDate, prepMealType])
 
   // Refresh AI Prediction when parameters change
   useEffect(() => {
@@ -303,7 +343,7 @@ function App() {
   const getNextDates = () => {
     const dates = []
     const today = new Date()
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 7; i++) {
       const date = new Date(today)
       date.setDate(today.getDate() + i)
       const year = date.getFullYear()
@@ -316,9 +356,20 @@ function App() {
 
   const dateOptions = getNextDates()
 
-  const getMealDetails = (mealType) => {
+  const getMealDetails = (mealType, targetDate = selectedDate) => {
+    const dayMenu = getMenuForDate(targetDate)
+    const match = dayMenu.find((meal) => meal.meal_type === mealType)
+    if (match) {
+      return {
+        type: match.meal_type,
+        time: match.timing_label,
+        menu: match.main_items,
+        dishes: match.dishes || []
+      }
+    }
     return meals.find((meal) => meal.type === mealType)
   }
+
 
   // Booking Flow
   const handleBookingClick = (meal) => {
@@ -505,19 +556,38 @@ function App() {
             )
           })}
         </div>
+
+        <div className="date-picker-wrap">
+          <input
+            type="date"
+            className="home-calendar-input"
+            id="home-date-picker"
+            value={selectedDate}
+            onChange={(e) => {
+              if (e.target.value) setSelectedDate(e.target.value)
+            }}
+          />
+        </div>
       </div>
 
       <div className="section-heading">
         <div>
-          <h2>Available Meals</h2>
+          <h2>Available Meals (Day {parseInt(selectedDate.split('-')[2] || '1', 10)})</h2>
           <p className="section-subtext">Pre-book before cutoff to ensure fresh preparation</p>
         </div>
 
-        <button className="view-menu" onClick={() => setActivePage('menu')}>
-          View Menu
-          <ChevronRight size={19} />
-        </button>
+        <div className="section-actions-row">
+          <button className="view-menu schedule-btn" onClick={() => setShowMonthlyScheduleModal(true)}>
+            <FileText size={17} />
+            31-Day Food Timetable
+          </button>
+          <button className="view-menu" onClick={() => setActivePage('menu')}>
+            Today's Menu
+            <ChevronRight size={19} />
+          </button>
+        </div>
       </div>
+
 
       <div className="meal-list">
         {meals.map((meal) => {
@@ -600,19 +670,76 @@ function App() {
     <>
       <div className="page-heading">
         <h2>Mess Menu & Timings</h2>
-        <p>Nutritious daily meals prepared in the college central mess.</p>
+        <p>Nutritious daily meals prepared in the central mess according to official monthly rotations.</p>
 
-        <div className="date-card">
-          <CalendarDays size={24} className="date-icon" />
-          <div className="date-divider"></div>
-          <p>{formatDate(selectedDate)}</p>
+        {/* Timetable Quick Banner */}
+        <div className="menu-schedule-action-banner">
+          <div className="banner-text">
+            <span className="banner-badge">Official Schedule</span>
+            <strong>31-Day Hostel Ladies Mess Timetable</strong>
+            <p>Every calendar day (1 to 31) features distinct dishes for Breakfast, Lunch & Dinner.</p>
+          </div>
+          <button className="open-monthly-btn" onClick={() => setShowMonthlyScheduleModal(true)}>
+            <FileText size={18} />
+            <span>Open 31-Day Mess Food Schedule</span>
+          </button>
+        </div>
+
+        {/* Date Selector Strip & Navigator */}
+        <div className="menu-date-navigator">
+          <button
+            className="date-nav-btn"
+            onClick={() => {
+              const d = new Date(`${selectedDate}T00:00:00`)
+              d.setDate(d.getDate() - 1)
+              const y = d.getFullYear()
+              const m = String(d.getMonth() + 1).padStart(2, '0')
+              const day = String(d.getDate()).padStart(2, '0')
+              setSelectedDate(`${y}-${m}-${day}`)
+            }}
+          >
+            ← Previous Day
+          </button>
+
+          <div className="date-card date-card-interactive">
+            <CalendarDays size={22} className="date-icon" />
+            <div className="date-divider"></div>
+            <div>
+              <p className="date-display-main">{formatDate(selectedDate)}</p>
+              <span className="date-day-sub">Calendar Day #{parseInt(selectedDate.split('-')[2] || '1', 10)}</span>
+            </div>
+            <input
+              type="date"
+              className="menu-date-input"
+              value={selectedDate}
+              onChange={(e) => {
+                if (e.target.value) setSelectedDate(e.target.value)
+              }}
+              title="Click to jump to any date"
+            />
+          </div>
+
+          <button
+            className="date-nav-btn"
+            onClick={() => {
+              const d = new Date(`${selectedDate}T00:00:00`)
+              d.setDate(d.getDate() + 1)
+              const y = d.getFullYear()
+              const m = String(d.getMonth() + 1).padStart(2, '0')
+              const day = String(d.getDate()).padStart(2, '0')
+              setSelectedDate(`${y}-${m}-${day}`)
+            }}
+          >
+            Next Day →
+          </button>
         </div>
 
         <div className="menu-info">
           <Utensils size={18} />
-          <span>Select any meal below to book for {formatDate(selectedDate)}.</span>
+          <span>Showing meals for {formatDate(selectedDate)} (Day {parseInt(selectedDate.split('-')[2] || '1', 10)}). Select any meal below to book.</span>
         </div>
       </div>
+
 
       <div className="meal-list">
         {meals.map((meal) => {
@@ -677,7 +804,7 @@ function App() {
       ) : (
         <div className="meal-list">
           {bookedMeals.map((booking) => {
-            const meal = getMealDetails(booking.meal)
+            const meal = getMealDetails(booking.meal, booking.date)
             if (!meal) return null
 
             return (
@@ -1514,12 +1641,13 @@ function App() {
 
             <div className="modal-meal">
               <h3>{cancelMeal.meal}</h3>
-              <p className="modal-menu-text">{getMealDetails(cancelMeal.meal)?.menu}</p>
+              <p className="modal-menu-text">{getMealDetails(cancelMeal.meal, cancelMeal.date)?.menu}</p>
               <p className="booking-date">{formatDate(cancelMeal.date)}</p>
               <span>
                 <Clock3 size={17} />
-                {getMealDetails(cancelMeal.meal)?.time}
+                {getMealDetails(cancelMeal.meal, cancelMeal.date)?.time}
               </span>
+
             </div>
 
             <div className="modal-buttons">
@@ -1572,8 +1700,175 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* Complete Monthly Mess Schedule Modal (Official Timetable View) */}
+      {showMonthlyScheduleModal && (
+        <div className="modal-overlay monthly-schedule-overlay" onClick={() => setShowMonthlyScheduleModal(false)}>
+          <div className="monthly-schedule-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="monthly-modal-header">
+              <div className="monthly-header-titles">
+                <div className="modal-header-icon-badge">
+                  <FileText size={24} />
+                </div>
+                <div>
+                  <h2>Hostel Ladies Mess Food Schedule</h2>
+                  <p>Official 31-Day Calendar Menu Timetable (Breakfast, Lunch & Dinner)</p>
+                </div>
+              </div>
+              <button
+                className="modal-close-icon-btn"
+                onClick={() => setShowMonthlyScheduleModal(false)}
+                title="Close Timetable"
+              >
+                <X size={22} />
+              </button>
+            </div>
+
+            {/* Filter and Search Bar */}
+            <div className="monthly-modal-toolbar">
+              <div className="monthly-search-box">
+                <Search size={18} />
+                <input
+                  type="text"
+                  placeholder="Search dishes (e.g., Parotta, Biryani, Pongal, Chapati, Noodles, Payasam)..."
+                  value={monthlySearchFilter}
+                  onChange={(e) => setMonthlySearchFilter(e.target.value)}
+                />
+                {monthlySearchFilter && (
+                  <button className="clear-search-btn" onClick={() => setMonthlySearchFilter('')}>
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+
+              <div className="monthly-filter-pills">
+                {[
+                  { id: 'all', label: 'All Days (1-31)' },
+                  { id: 'week1', label: 'Days 1-7' },
+                  { id: 'week2', label: 'Days 8-14' },
+                  { id: 'week3', label: 'Days 15-21' },
+                  { id: 'week4', label: 'Days 22-31' }
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    className={`filter-pill ${monthlyWeekFilter === tab.id ? 'active' : ''}`}
+                    onClick={() => setMonthlyWeekFilter(tab.id)}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Timetable Content */}
+            <div className="monthly-schedule-scroll">
+              <div className="monthly-days-grid">
+                {getAllMonthlyMenus()
+                  .filter((item) => {
+                    if (monthlyWeekFilter === 'week1' && (item.dayNumber < 1 || item.dayNumber > 7)) return false
+                    if (monthlyWeekFilter === 'week2' && (item.dayNumber < 8 || item.dayNumber > 14)) return false
+                    if (monthlyWeekFilter === 'week3' && (item.dayNumber < 15 || item.dayNumber > 21)) return false
+                    if (monthlyWeekFilter === 'week4' && (item.dayNumber < 22 || item.dayNumber > 31)) return false
+
+                    if (!monthlySearchFilter.trim()) return true
+                    const q = monthlySearchFilter.toLowerCase()
+                    const inBf = item.breakfast.main_items.toLowerCase().includes(q) || item.breakfast.dishes.some(d => d.toLowerCase().includes(q))
+                    const inLu = item.lunch.main_items.toLowerCase().includes(q) || item.lunch.dishes.some(d => d.toLowerCase().includes(q))
+                    const inDi = item.dinner.main_items.toLowerCase().includes(q) || item.dinner.dishes.some(d => d.toLowerCase().includes(q))
+                    return inBf || inLu || inDi
+                  })
+                  .map((item) => {
+                    const isSelectedDay = parseInt(selectedDate.split('-')[2] || '1', 10) === item.dayNumber
+                    return (
+                      <div
+                        key={item.dayNumber}
+                        className={`monthly-day-card ${isSelectedDay ? 'current-day-highlight' : ''}`}
+                      >
+                        <div className="day-card-header">
+                          <div className="day-title-wrap">
+                            <span className="day-number-badge">Day {item.dayNumber}</span>
+                            <span className="day-name-tag">{item.weekday}</span>
+                            {isSelectedDay && <span className="active-tag">Active in App</span>}
+                          </div>
+
+                          <button
+                            className="select-day-action-btn"
+                            onClick={() => {
+                              const currParts = selectedDate.split('-')
+                              const newDate = `${currParts[0]}-${currParts[1]}-${String(item.dayNumber).padStart(2, '0')}`
+                              setSelectedDate(newDate)
+                              setShowMonthlyScheduleModal(false)
+                              showToast(`Switched view to Day ${item.dayNumber} (${item.weekday})`)
+                            }}
+                          >
+                            <Check size={14} />
+                            <span>Select Day {item.dayNumber}</span>
+                          </button>
+                        </div>
+
+                        <div className="day-meals-container">
+                          {/* Breakfast */}
+                          <div className="meal-column breakfast-column">
+                            <div className="meal-column-header">
+                              <span className="meal-icon-tag">🌅 Breakfast</span>
+                              <span className="col-time">{item.breakfast.timing_label}</span>
+                            </div>
+                            <p className="meal-main-text">{item.breakfast.main_items}</p>
+                            <div className="dish-pills-list">
+                              {item.breakfast.dishes.map((dish, idx) => (
+                                <span key={idx} className="dish-bubble">{dish}</span>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Lunch */}
+                          <div className="meal-column lunch-column">
+                            <div className="meal-column-header">
+                              <span className="meal-icon-tag">☀️ Lunch</span>
+                              <span className="col-time">{item.lunch.timing_label}</span>
+                            </div>
+                            <p className="meal-main-text">{item.lunch.main_items}</p>
+                            <div className="dish-pills-list">
+                              {item.lunch.dishes.map((dish, idx) => (
+                                <span key={idx} className="dish-bubble">{dish}</span>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Dinner */}
+                          <div className="meal-column dinner-column">
+                            <div className="meal-column-header">
+                              <span className="meal-icon-tag">🌙 Dinner</span>
+                              <span className="col-time">{item.dinner.timing_label}</span>
+                            </div>
+                            <p className="meal-main-text">{item.dinner.main_items}</p>
+                            <div className="dish-pills-list">
+                              {item.dinner.dishes.map((dish, idx) => (
+                                <span key={idx} className="dish-bubble">{dish}</span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+              </div>
+            </div>
+
+            <div className="monthly-modal-footer">
+              <span className="footer-note">
+                💡 Calendar-day schedule automatically aligns with the hostel food PDF. Select any day to view or book.
+              </span>
+              <button className="modal-close-btn" onClick={() => setShowMonthlyScheduleModal(false)}>
+                Close Timetable
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
+
 
 export default App
