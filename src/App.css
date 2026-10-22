@@ -1682,3 +1682,510 @@ main {
     font-size: 24px;
   }
 }
+
+/* =========================================================================
+   31-Day Hostel Mess Schedule & Dynamic Date Controls
+   ========================================================================= */
+
+.section-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.schedule-btn {
+  background: #ecfdf5 !important;
+  color: #047857 !important;
+  border: 1px solid #a7f3d0 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.schedule-btn:hover {
+  background: #d1fae5 !important;
+  color: #065f46 !important;
+}
+
+.home-calendar-input {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  color: #1f2937;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.home-calendar-input:hover,
+.home-calendar-input:focus {
+  border-color: #10b981;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+/* Menu Schedule Action Banner */
+.menu-schedule-action-banner {
+  background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+  color: white;
+  padding: 18px 24px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(6, 78, 59, 0.15);
+  flex-wrap: wrap;
+}
+
+.banner-badge {
+  background: #10b981;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  display: inline-block;
+  margin-bottom: 6px;
+}
+
+.banner-text strong {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.banner-text p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #d1fae5;
+}
+
+.open-monthly-btn {
+  background: #ffffff;
+  color: #065f46;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.open-monthly-btn:hover {
+  background: #f0fdf4;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+/* Menu Date Navigator */
+.menu-date-navigator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.date-nav-btn {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #065f46;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.date-nav-btn:hover {
+  background: #f0fdf4;
+  border-color: #10b981;
+}
+
+.date-card-interactive {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #ffffff;
+  border: 1px solid #a7f3d0;
+  border-radius: 12px;
+  padding: 10px 16px;
+  position: relative;
+}
+
+.date-display-main {
+  font-size: 14px;
+  font-weight: 700;
+  color: #064e3b;
+  margin: 0;
+}
+
+.date-day-sub {
+  font-size: 11px;
+  color: #059669;
+  font-weight: 600;
+  display: block;
+}
+
+.menu-date-input {
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: #334155;
+  background: #f8fafc;
+  cursor: pointer;
+}
+
+/* MONTHLY TIMETABLE MODAL */
+.monthly-schedule-overlay {
+  z-index: 250 !important;
+  background: rgba(15, 23, 42, 0.7) !important;
+  padding: 20px;
+}
+
+.monthly-schedule-modal {
+  background: #ffffff;
+  width: 95%;
+  max-width: 1080px;
+  max-height: 90vh;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalPop {
+  0% { transform: scale(0.96); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.monthly-modal-header {
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #064e3b 0%, #047857 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #10b981;
+}
+
+.monthly-header-titles {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.modal-header-icon-badge {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 10px;
+  border-radius: 12px;
+  color: #a7f3d0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.monthly-modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.monthly-modal-header p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #a7f3d0;
+}
+
+.modal-close-icon-btn {
+  color: #ffffff;
+  opacity: 0.8;
+  padding: 6px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close-icon-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Toolbar */
+.monthly-modal-toolbar {
+  padding: 14px 24px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.monthly-search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 8px 12px;
+  min-width: 280px;
+  flex: 1;
+  color: #64748b;
+}
+
+.monthly-search-box input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-size: 13px;
+  color: #1e293b;
+  outline: none;
+}
+
+.clear-search-btn {
+  color: #94a3b8;
+  padding: 2px;
+}
+
+.monthly-filter-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filter-pill {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #ffffff;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  transition: all 0.15s ease;
+}
+
+.filter-pill:hover {
+  border-color: #10b981;
+  color: #047857;
+}
+
+.filter-pill.active {
+  background: #047857;
+  color: #ffffff;
+  border-color: #047857;
+}
+
+/* Scroll Area */
+.monthly-schedule-scroll {
+  padding: 20px 24px;
+  overflow-y: auto;
+  max-height: calc(90vh - 180px);
+  background: #f8fafc;
+}
+
+.monthly-days-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.monthly-day-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  transition: all 0.2s ease;
+}
+
+.monthly-day-card:hover {
+  border-color: #a7f3d0;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.08);
+}
+
+.monthly-day-card.current-day-highlight {
+  border: 2px solid #10b981;
+  background: #fdfeff;
+}
+
+.day-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.day-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.day-number-badge {
+  background: #064e3b;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.3px;
+}
+
+.day-name-tag {
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.active-tag {
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid #86efac;
+}
+
+.select-day-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #047857;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+.select-day-action-btn:hover {
+  background: #059669;
+  color: #ffffff;
+  border-color: #059669;
+}
+
+/* Meals Container */
+.day-meals-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 860px) {
+  .day-meals-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.meal-column {
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+}
+
+.breakfast-column { border-left: 3px solid #f59e0b; }
+.lunch-column { border-left: 3px solid #10b981; }
+.dinner-column { border-left: 3px solid #6366f1; }
+
+.meal-column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.meal-icon-tag {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.col-time {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.meal-main-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0 0 8px;
+  line-height: 1.4;
+}
+
+.dish-pills-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: auto;
+}
+
+.dish-bubble {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.monthly-modal-footer {
+  padding: 14px 24px;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.footer-note {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.modal-close-btn {
+  background: #047857;
+  color: white;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 8px 18px;
+  border-radius: 8px;
+}
+
+.modal-close-btn:hover {
+  background: #065f46;
+}

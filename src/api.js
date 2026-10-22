@@ -15,37 +15,29 @@ export async function fetchHealth() {
   }
 }
 
-export async function fetchMenus() {
+import { getMenuForDate, getAllMonthlyMenus } from './data/messMenu'
+
+export async function fetchMenus(date = null) {
   try {
-    const res = await fetch(`${API_BASE}/menus`, { signal: AbortSignal.timeout(2500) })
+    const url = date ? `${API_BASE}/menus?date=${encodeURIComponent(date)}` : `${API_BASE}/menus`
+    const res = await fetch(url, { signal: AbortSignal.timeout(2500) })
     if (res.ok) return await res.json()
   } catch (err) {
-    console.warn('Backend unavailable, using default menus:', err.message)
+    console.warn('Backend unavailable, using calendar schedule fallback:', err.message)
   }
-  return [
-    {
-      id: 'menu_breakfast',
-      meal_type: 'Breakfast',
-      timing_label: '7:00 AM – 8:45 AM',
-      main_items: 'Idli, Sambar & Chutney',
-      dishes: ['Idli', 'Sambar', 'Coconut Chutney', 'Medu Vada']
-    },
-    {
-      id: 'menu_lunch',
-      meal_type: 'Lunch',
-      timing_label: '12:15 PM – 1:30 PM',
-      main_items: 'Rice, Sambar, Poriyal & Curd',
-      dishes: ['Steamed Rice', 'Sambar', 'Vegetable Poriyal', 'Curd', 'Rasam']
-    },
-    {
-      id: 'menu_dinner',
-      meal_type: 'Dinner',
-      timing_label: '7:00 PM – 8:45 PM',
-      main_items: 'Chapati & Vegetable Curry',
-      dishes: ['Wheat Chapati', 'Mixed Vegetable Curry', 'Dal Tadka', 'Jeera Rice']
-    }
-  ]
+  return getMenuForDate(date)
 }
+
+export async function fetchMonthlyMenus() {
+  try {
+    const res = await fetch(`${API_BASE}/menus/month`, { signal: AbortSignal.timeout(2500) })
+    if (res.ok) return await res.json()
+  } catch (err) {
+    console.warn('Backend unavailable, using local monthly schedule:', err.message)
+  }
+  return getAllMonthlyMenus()
+}
+
 
 export async function fetchStudentProfile(studentId = 'std_supriya') {
   try {

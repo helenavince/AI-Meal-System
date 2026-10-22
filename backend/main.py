@@ -23,6 +23,10 @@ from .models import (
     MealWasteSubmission,
     PredictionRequest
 )
+from .data.mess_menu import (
+    get_menu_for_date,
+    get_all_monthly_menus
+)
 from .database import (
     init_db,
     get_student_profile,
@@ -74,9 +78,14 @@ def health_check():
 # =========================================================================
 
 @app.get("/api/menus")
-def get_menus():
-    """Returns active meal menus with timings and dish lists."""
-    return get_all_menus()
+def get_menus(date: Optional[str] = Query(None)):
+    """Returns active meal menus with timings and dish lists for a specific date or today."""
+    return get_menu_for_date(date)
+
+@app.get("/api/menus/month")
+def get_monthly_menus():
+    """Returns complete 31-day hostel mess timetable."""
+    return get_all_monthly_menus()
 
 @app.get("/api/student/{student_id}")
 def get_student(student_id: str):
